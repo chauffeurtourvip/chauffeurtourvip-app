@@ -1,0 +1,30 @@
+name: Publier le lien de téléchargement
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Numéro de la fabrication à publier'
+        required: true
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ChauffeurTourVIP-apk
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: appli
+          name: ChauffeurTourVIP - appli Android
+          body: Téléchargez ChauffeurTourVIP.apk puis touchez Installer.
+          make_latest: true
+          files: ChauffeurTourVIP.apk

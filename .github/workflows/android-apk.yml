@@ -3,7 +3,7 @@ name: Fabriquer l'APK Android
 on:
   push:
     branches: [main]
-    paths: ['project.tar.xz', '.github/workflows/android-apk.yml']
+    paths: ['project.tar.xz', 'patch/**', '.github/workflows/android-apk.yml']
   workflow_dispatch:
 
 jobs:
@@ -18,6 +18,9 @@ jobs:
 
       - name: Déballer le code de l'appli
         run: tar -xJf project.tar.xz
+
+      - name: Appliquer les mises à jour
+        run: if [ -d patch ]; then cp -r patch/. .; fi
 
       - uses: actions/setup-node@v4
         with:

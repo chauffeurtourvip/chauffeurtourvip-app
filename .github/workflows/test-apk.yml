@@ -1,0 +1,52 @@
+name: Tester l'APK sur un émulateur
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Numéro de la fabrication à tester'
+        required: true
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ChauffeurTourVIP-apk
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Activer KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: |
+            adb install -r ChauffeurTourVIP.apk
+            adb logcat -c
+            adb shell monkey -p fr.chauffeurtourvip.app -c android.intent.category.LAUNCHER 1
+            sleep 30
+            adb logcat -d > logcat.txt
+            adb exec-out screencap -p > screen.png
+            grep -E "FATAL|AndroidRuntime|ReactNativeJS|SoLoader|UnsatisfiedLink|Exception" logcat.txt | head -200 || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resultats-test
+          path: |
+            logcat.txt
+            screen.png

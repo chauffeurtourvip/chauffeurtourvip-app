@@ -1,0 +1,58 @@
+name: Fabriquer l'APK Android
+
+on:
+  push:
+    branches: [main]
+    paths: ['project.tar.xz', '.github/workflows/android-apk.yml']
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérifier que le code est présent
+        run: test -f project.tar.xz || (echo "Déposez d'abord project.tar.xz dans le dépôt" && exit 1)
+
+      - name: Déballer le code de l'appli
+        run: tar -xJf project.tar.xz
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Préparer les images (icône, logo)
+        run: |
+          pip install pillow --break-system-packages || pip install pillow
+          mkdir -p assets
+          python3 tools/make_assets.py
+
+      - name: Installer les modules
+        run: npm ci || npm install
+
+      - name: Générer le projet Android natif
+        run: npx expo prebuild --platform android --no-install
+        env:
+          CI: 1
+
+      - name: Compiler l'APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+
+      - name: Renommer l'APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk ChauffeurTourVIP.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ChauffeurTourVIP-apk
+          path: ChauffeurTourVIP.apk
+          retention-days: 30

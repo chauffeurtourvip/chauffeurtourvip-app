@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "155009954826",
+    "project_id": "chauffeurtourvip-c7309",
+    "storage_bucket": "chauffeurtourvip-c7309.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:155009954826:android:15cb08169974be3ba35bf3",
+        "android_client_info": {
+          "package_name": "fr.chauffeurtourvip.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVdZF2FLMb4fghY3G5OYL4I3e0rp8RuX0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
